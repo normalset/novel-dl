@@ -11,6 +11,16 @@ chrome_options = Options()
 chrome_options.add_argument('--headless')  # Run Chrome in headless mode
 chrome_options.add_argument('--disable-gpu')  # Disable GPU acceleration (needed in headless mode)
 
+def get_bookname_from_url(url): #? works form novelhi/lightnovelhub tbd for other websites
+    #handle case where website fails or userURL is not correct
+    try:
+        bookname = userURL.split('/')[4].replace('-',' ')
+        print(f"\n\nBookname : {bookname}")
+        return bookname
+    except Exception as e:
+            print(f"Error: {e}")
+            print("Novel URL is not in correct format. Please try again.")
+            exit()
 
 def download_image(url, save_path):
     response = requests.get(url, stream=True)
@@ -23,7 +33,7 @@ def download_image(url, save_path):
         print(f"\n\nFailed to download image. Status code: {response.status_code}")
 
 
-def download_image_selenium(url, save_path):
+def download_image_lightnovelhub(url, save_path):
     # Set up the ChromeOptions
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')  # Run Chrome in headless mode
@@ -61,8 +71,7 @@ website = userURL.split('/')[2] #https: , "" , "website"
 def novel_hi_scraper():  
     #get bookname and open file
     global bookname 
-    bookname = userURL.split('/')[4].replace('-',' ')
-    print(f"\n\nbookname : {bookname}")
+    bookname = get_bookname_from_url(userURL)
 
     #handle cover download
     coverRequest = requests.get(userURL)
@@ -108,11 +117,10 @@ def lightnovelhub_scraper():
 
     #get bookname and open file
     global bookname 
-    bookname = userURL.split('/')[4].replace('-',' ')
-    print(f"\n\nbookname : {bookname}")
+    bookname = get_bookname_from_url(userURL)
 
     #download cover image for epub file
-    download_image_selenium(userURL, cover_save_path) 
+    download_image_lightnovelhub(userURL, cover_save_path) 
     
     file = open(f"{bookname}.txt" , "a+" )
     
@@ -192,11 +200,10 @@ if(removeTXT == 'y'):
 
 #remove coverImage file
 try:
-    os.remove('cover-image.jpg')
     os.remove('cover-image.png')
     print(f"File 'cover-image' has been successfully removed.")
 except Exception as e:
-    print(f"An error occurred: {e}")
+    print(f"Image not deleted: {e}")
 
 
 
