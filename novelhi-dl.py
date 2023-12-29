@@ -1,10 +1,16 @@
 import requests
-import re
 import pypandoc
 import os
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 
-#todo modify how the title is extracted from the URL for multiple websites
+# Set up the headless browser for webdriver
+chrome_options = Options()
+chrome_options.add_argument('--headless')  # Run Chrome in headless mode
+chrome_options.add_argument('--disable-gpu')  # Disable GPU acceleration (needed in headless mode)
+
 
 def download_image(url, save_path):
     response = requests.get(url, stream=True)
@@ -16,11 +22,31 @@ def download_image(url, save_path):
     else:
         print(f"\n\nFailed to download image. Status code: {response.status_code}")
 
-cover_save_path = 'cover-image.jpg'
+
+def download_image_selenium(url, save_path):
+    # Set up the ChromeOptions
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')  # Run Chrome in headless mode
+
+    # Create a WebDriver instance with the specified options
+    driver = webdriver.Chrome(options=chrome_options)
+    # Navigate to the image URL
+    driver.get(url)
+    driver.implicitly_wait(10)
+    # Find the image element using the By.TAG_NAME method, get 3rd item and save it
+    image = driver.find_elements(By.TAG_NAME, 'img')[2]
+    image.screenshot(save_path)
+    
+    print(f"\n\nImage downloaded and saved at: {save_path}")
+    # Close the browser
+    driver.quit()
+
+
+cover_save_path = 'cover-image.png'
 
 
 #Get url from user
-userURL = input("Enter the URL of the novel (without a chapter open) \nFormat of the link should be https://novelhi.com/s/NovelName\n: ")
+userURL = input("Enter the URL of the novel (without a chapter open) \nFormat of the link should be https://novelhi.com/s/NovelName or https://www.lightnovelhub.org/novel/novelName\n: ")
 
 
 FIRSTCHAPTER = input("\n\nInsert first chapter number to be downloaded: ")
@@ -78,8 +104,53 @@ def novel_hi_scraper():
         sentID = 0
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
 
-def lightnovelhub_scraper():
-    print("debug: todo")
+def lightnovelhub_scraper(): 
+
+    #get bookname and open file
+    global bookname 
+    bookname = userURL.split('/')[4].replace('-',' ')
+    print(f"\n\nbookname : {bookname}")
+
+    #download cover image for epub file
+    download_image_selenium(userURL, cover_save_path) 
+    
+    file = open(f"{bookname}.txt" , "a+" )
+    
+    for chapterNumber in range(int(FIRSTCHAPTER) , int(LASTCHAPTER)+1): 
+        url = f"{userURL}/chapter-{chapterNumber}"
+        
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+
+        # Wait for some time to allow JavaScript to execute (adjust the time as needed)
+        driver.implicitly_wait(10)
+        page = driver.page_source
+        
+        #print("DEBUG" , page)
+
+        #handle case where website fails
+        # if page.status_code!= 200:
+        #     print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
+        #     break
+
+        parser = BeautifulSoup(page, "html.parser")
+
+        chapterText = "" 
+        chapterName = parser.find("span", {"class": "chapter-title"}).text
+        chapterText += "\n# " + chapterName + "\n"
+
+        container = parser.find("div", {"id": "chapter-container"})
+        chapterTextArray = container.find_all("p")
+        for line in chapterTextArray:
+            chapterText += "\n" + line.text + "\n"
+
+        driver.quit()
+
+        file.write(chapterText)
+        print(f"PRINTING CHAPTER {chapterNumber}")
+        #print(f'{chapterText}')
+        print(f"CHAPTER {chapterNumber} DONE\n------------------------------")
+    print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
 
 
 
@@ -122,9 +193,8 @@ if(removeTXT == 'y'):
 #remove coverImage file
 try:
     os.remove('cover-image.jpg')
-    print(f"File 'cover-image.jpg' has been successfully removed.")
-except FileNotFoundError:
-    print(f"File 'cover-image.jpg' not found.")
+    os.remove('cover-image.png')
+    print(f"File 'cover-image' has been successfully removed.")
 except Exception as e:
     print(f"An error occurred: {e}")
 
