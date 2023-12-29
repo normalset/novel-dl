@@ -4,7 +4,7 @@ A simple python script to automatically scrape web novels from [novelhi](https:/
 —
 
 ### Installation
-Run this command in a terminal to install the required libraries (`pypandoc` , `requests` , `beautifulsoup4`):
+Run this command in a terminal to install the required libraries (`pypandoc` , `requests` , `beautifulsoup4`, `selenium`):
 ```
 pip3 install -r requirements.txt
 ```
@@ -15,7 +15,9 @@ Run and follow the requests on the terminal
 ```
 python3 novelhi-dl.py
 ```
-
+## Currently supported websites
+- [lightnovelhub](https://www.lightnovelhub.org/home)
+- [novelhi](https://novelhi.com)
 ### Example run 
 
 - Initial prompt to insert the novel link and the first and last chapter to include in the final epub file
