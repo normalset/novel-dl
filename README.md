@@ -17,8 +17,7 @@ python3 novelhi-dl.py
 ```
 ## Currently supported websites
 - [lightnovelhub](https://www.lightnovelhub.org/home)
-- [novelhi](https://novelhi.com)
-- 
+- [novelhi](https://novelhi.com) 
 ## Example run 
 
 - Initial prompt to insert the novel link and the first and last chapter to include in the final epub file
