@@ -24,13 +24,14 @@ python3 novelhi-dl.py
 
 
 - Initial prompt to insert the novel link and the first and last chapter to include in the final epub file
-![Initial prompt to insert the novel link and the first and last chapter to include in the final epub file](https://imgur.com/CtObglm)
+![Initial prompt to insert the novel link and the first and last chapter to include in the final epub file](https://imgur.com/yH8c4cH.png)
 
 - Example of how the beginning of the download looks like
-![Example of how the beginning of the download looks like](https://imgur.com/NG9MtMU)
+![Example of how the beginning of the download looks like](https://imgur.com/r3x0tpm.png)
 
 - Example of how the end of the download of a chapter looks like
-![Example of how the end of the download of a chapter looks like](https://imgur.com/0lWxCzK)
+![Example of how the end of the download of a chapter looks like](https://imgur.com/95zwBPz.png)
 
 - Example of how the compression into the final epub looks like
-![Example of how the compression into the final epub looks like](https://imgur.com/j8mP5MM)
+![Example of how the compression into the final epub looks like](https://imgur.com/MySZ15s.png)
+
