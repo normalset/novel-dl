@@ -1,88 +1,39 @@
 import requests
 import pypandoc
+pypandoc.download_pandoc()
 import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-# Set up the headless browser for webdriver
-chrome_options = Options()
-chrome_options.add_argument('--headless')  # Run Chrome in headless mode
-chrome_options.add_argument('--disable-gpu')  # Disable GPU acceleration (needed in headless mode)
+from utility_functions import *
 
-def get_bookname_from_url(url): #? works form novelhi/lightnovelhub tbd for other websites
-    #handle case where website fails or userURL is not correct
-    try:
-        bookname = userURL.split('/')[4].replace('-',' ')
-        print(f"\n\nBookname : {bookname}")
-        return bookname
-    except Exception as e:
-            print(f"Error: {e}")
-            print("Novel URL is not in correct format. Please try again.")
-            exit()
-
-def download_image(url, save_path):
-    response = requests.get(url, stream=True)
-    if response.status_code == 200:
-        with open(save_path, 'wb') as file:
-            for chunk in response.iter_content(chunk_size=128):
-                file.write(chunk)
-        print(f"\n\nImage downloaded and saved at: {save_path}")
-    else:
-        print(f"\n\nFailed to download image. Status code: {response.status_code}")
-
-
-def download_image_lightnovelhub(url, save_path):
-    # Set up the ChromeOptions
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')  # Run Chrome in headless mode
-
-    # Create a WebDriver instance with the specified options
-    driver = webdriver.Chrome(options=chrome_options)
-    # Navigate to the image URL
-    driver.get(url)
-    driver.implicitly_wait(10)
-    # Find the image element using the By.TAG_NAME method, get 3rd item and save it
-    image = driver.find_elements(By.TAG_NAME, 'img')[2]
-    image.screenshot(save_path)
-    
-    print(f"\n\nImage downloaded and saved at: {save_path}")
-    # Close the browser
-    driver.quit()
-
-
+#? Global definitions
 cover_save_path = 'cover-image.png'
 
 
-#Get url from user
-userURL = input("Enter the URL of the novel (without a chapter open) \nFormat of the link should be https://novelhi.com/s/NovelName or https://www.lightnovelhub.org/novel/novelName\n: ")
-
-
-FIRSTCHAPTER = input("\n\nInsert first chapter number to be downloaded: ")
-LASTCHAPTER = input("\n\nInsert last chapter number to be downloaded: ")
-
-
-#* Tokenize link to use correct website scraper
-website = userURL.split('/')[2] #https: , "" , "website"
-
 #? functions for different websites
 #todo save functions in a separate file
-def novel_hi_scraper():  
+def novel_hi_scraper(fc, lc):  
     #get bookname and open file
     global bookname 
     bookname = get_bookname_from_url(userURL)
+
+    #get last chapter
+    if lc and lc == "getLastChapter":
+        lc = get_nh_lastchapter(userURL)
 
     #handle cover download
     coverRequest = requests.get(userURL)
     coverParser = BeautifulSoup(coverRequest.content, "html.parser")
     image_url = coverParser.find('img', class_='cover')['src']
-    download_image(image_url, cover_save_path)
+    download_image_novelhi(image_url, cover_save_path)
     coverRequest.close()
     
     file = open(f"{bookname}.txt" , "a+" )
     
-    for chapterNumber in range(int(FIRSTCHAPTER) , int(LASTCHAPTER)+1): 
+    for chapterNumber in range(int(fc) , int(lc)+1): 
         url = f"{userURL}/{chapterNumber}"
         page = requests.get(url)
         print("DEBUG" , page)
@@ -107,24 +58,33 @@ def novel_hi_scraper():
 
         page.close()
         file.write(chapterText)
-        print(f"PRINTING CHAPTER {chapterNumber}")
-        #print(f'{chapterText}')
-        print(f"CHAPTER {chapterNumber} DONE\n------------------------------")
+        print(f"CHAPTER {chapterNumber} DONE\n")
         sentID = 0
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
 
-def lightnovelhub_scraper(): 
+def lightnovelhub_scraper(fc, lc): 
+
+    chrome_options = webdriver.ChromeOptions() # Set up the headless browser for webdriver
+    chrome_options.add_argument('--headless')  # Run Chrome in headless mode
+    chrome_options.add_argument('--disable-gpu')  # Disable GPU acceleration (needed in headless mode)
+    chrome_options.add_argument('--no-sandbox')
+    driver = webdriver.Chrome(options=chrome_options) # Create a WebDriver instance with the specified options
+    driver.minimize_window()
 
     #get bookname and open file
     global bookname 
     bookname = get_bookname_from_url(userURL)
 
+    #get last chapter
+    if lc and lc == "getLastChapter":
+        lc = get_lnh_lastchapter(userURL)
+
     #download cover image for epub file
-    download_image_lightnovelhub(userURL, cover_save_path) 
+    download_image_lightnovelhub(userURL, cover_save_path)
     
     file = open(f"{bookname}.txt" , "a+" )
     
-    for chapterNumber in range(int(FIRSTCHAPTER) , int(LASTCHAPTER)+1): 
+    for chapterNumber in range(int(fc) , int(lc)+1): 
         url = f"{userURL}/chapter-{chapterNumber}"
         
         driver = webdriver.Chrome(options=chrome_options)
@@ -136,7 +96,7 @@ def lightnovelhub_scraper():
         
         #print("DEBUG" , page)
 
-        #handle case where website fails
+        # handle case where website fails
         # if page.status_code!= 200:
         #     print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
         #     break
@@ -155,19 +115,28 @@ def lightnovelhub_scraper():
         driver.quit()
 
         file.write(chapterText)
-        print(f"PRINTING CHAPTER {chapterNumber}")
-        #print(f'{chapterText}')
-        print(f"CHAPTER {chapterNumber} DONE\n------------------------------")
+        print(f"CHAPTER {chapterNumber} DONE\n")
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
 
 
 
-match website:
-        case "novelhi.com":
-            novel_hi_scraper()
-        case "www.lightnovelhub.org":
-            lightnovelhub_scraper()
+#* main function
+#Get url from user
+userURL = input("Enter the URL of the novel (without a chapter open) \nFormat of the link should be https://novelhi.com/s/NovelName or https://www.lightnovelhub.org/novel/novelName\n: ")
 
+
+FIRSTCHAPTER = input("\n\nInsert first chapter number to be downloaded (leave empty to download from the first chapter): ")
+if FIRSTCHAPTER == "" : FIRSTCHAPTER = 1
+LASTCHAPTER = input("\n\nInsert last chapter number to be downloaded (leave empty to download to the last ): ")
+if LASTCHAPTER == "" : LASTCHAPTER = "getLastChapter"
+#* Tokenize link to use correct website scraper
+website = userURL.split('/')[2] #https: , "" , "website"
+
+match website:
+    case "novelhi.com":
+        novel_hi_scraper(FIRSTCHAPTER, LASTCHAPTER)
+    case "www.lightnovelhub.org":
+        lightnovelhub_scraper(FIRSTCHAPTER, LASTCHAPTER)
 
 # Specify the input and output formats
 input_format = 'markdown'
@@ -204,7 +173,3 @@ try:
     print(f"File 'cover-image' has been successfully removed.")
 except Exception as e:
     print(f"Image not deleted: {e}")
-
-
-
-
