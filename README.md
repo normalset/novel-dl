@@ -19,9 +19,10 @@ python3 novelhi-dl.py
 - [lightnovelhub](https://www.lightnovelhub.org/home)
 - [novelhi](https://novelhi.com) 
 ## Example run 
+![Example run](https://imgur.com/a/zoPQ74D)
 
 - Initial prompt to insert the novel link and the first and last chapter to include in the final epub file
-![Initial prompt to insert the novel link and the first and last chapter to include in the final epub file](https://media.discordapp.net/attachments/1040311436083212309/1189926483200839773/Screenshot_2023-12-28_at_14.39.05.png?ex=659ff065&is=658d7b65&hm=8cc3ef5ff6894e73112b077aa8273d457801766c2b32811daaef16d8396fdeb6&=&format=webp&quality=lossless&width=454&height=246)
+![Initial prompt to insert the novel link and the first and last chapter to include in the final epub file]([https://media.discordapp.net/attachments/1040311436083212309/1189926483200839773/Screenshot_2023-12-28_at_14.39.05.png?ex=659ff065&is=658d7b65&hm=8cc3ef5ff6894e73112b077aa8273d457801766c2b32811daaef16d8396fdeb6&=&format=webp&quality=lossless&width=454&height=246](https://imgur.com/a/zoPQ74D))
 
 - Example of how the beginning of the download looks like
 ![Example of how the beginning of the download looks like](https://media.discordapp.net/attachments/1040311436083212309/1189926507234197504/Screenshot_2023-12-28_at_14.39.15.png?ex=659ff06b&is=658d7b6b&hm=4dc30ca4bd8740410fcb7bb04eee8e17ecad5aa277f405153ad3fde67ea5b7a3&=&format=webp&quality=lossless&width=624&height=117)
