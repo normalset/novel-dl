@@ -1,10 +1,8 @@
 import tkinter as tk
 from multiprocessing import Process, Pipe
-
+import sys
 
 from utility_functions import *
-
-    
 
 def create_ui(pipe, proc_sem, queue,):
 
@@ -18,7 +16,7 @@ def create_ui(pipe, proc_sem, queue,):
         f.destroy()  # Destroy the window (optional)
         print("Window close, exiting program")
         pipe.close()
-        exit()
+        sys.exit()
 
     def start_download():
         print("download Button pressed")
@@ -128,5 +126,4 @@ def create_ui(pipe, proc_sem, queue,):
     loop()  # Call loop to start periodic updates
 
     f.mainloop()
-    return debug_text
 

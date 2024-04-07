@@ -2,7 +2,7 @@ import os
 from multiprocessing import Process, Pipe, Semaphore, Queue
 import requests
 import pypandoc
-pypandoc.download_pandoc()
+# pypandoc.download_pandoc()
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
