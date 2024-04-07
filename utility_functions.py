@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+
+from multiprocessing import Queue
+
 def create_selenium_driver():
   chrome_options = webdriver.ChromeOptions() # Set up the headless browser for webdriver
   chrome_options.add_argument('--headless')  # Run Chrome in headless mode
