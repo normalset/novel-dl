@@ -19,10 +19,8 @@ python3 novelhi-dl.py
 - [lightnovelhub](https://www.lightnovelhub.org/home)
 - [novelhi](https://novelhi.com) 
 ## Example run 
-![Example run](https://imgur.com/a/zoPQ74D)
 
-
-
+### In terminal using novel-dl.py
 - Initial prompt to insert the novel link and the first and last chapter to include in the final epub file
 ![Initial prompt to insert the novel link and the first and last chapter to include in the final epub file](https://imgur.com/yH8c4cH.png)
 
@@ -35,3 +33,5 @@ python3 novelhi-dl.py
 - Example of how the compression into the final epub looks like
 ![Example of how the compression into the final epub looks like](https://imgur.com/MySZ15s.png)
 
+### Using tkinter UI
+![Example using tkinter](https://imgur.com/xIQemJG.png)
