@@ -4,8 +4,6 @@ import sys , signal, os
 
 from utility_functions import *
 
-from PIL import Image , ImageTk
-
 #! deprecated, using custom_ui now keeping, for future tests
 #todo  if text == "Cover image downloaded and saved" : add_cover_img() -> display downloaded cover-img.png file
 
