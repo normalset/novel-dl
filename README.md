@@ -1,5 +1,5 @@
 # novel-dl
-A simple python script to automatically scrape web novels from [novelhi](https://novelhi.com), [lightnovelhub](https://www.lightnovelhub.org/home) (and more to come soon) to compress it into an epub file for eReaders.
+A simple python script to automatically scrape web novels from [novelhi](https://novelhi.com), [lightnovelhub](https://www.lightnovelhub.org/home) (and more to come soon) and automatically compress them into an epub file for eReaders.
 
 —
 
