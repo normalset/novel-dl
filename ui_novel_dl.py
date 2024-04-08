@@ -11,6 +11,10 @@ from selenium.webdriver.common.by import By
 from utility_functions import *
 import custom_ui as ui
 
+#todo get download functions working without global declarations
+#todo separate main and download functions
+#todo integrate manga-dl 
+
 #? Global definitions
 cover_save_path = 'cover-image.png'
 
@@ -142,7 +146,6 @@ if __name__ == '__main__' :
     ui_process = Process(target=ui.create_ui , args=(ui_pipe, proc_sem, debug_msg_q, ))
     ui_process.start()
     while(1):
-        print("i got here")
         #wait for ui process to post sem
         proc_sem.acquire()
 
