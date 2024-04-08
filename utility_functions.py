@@ -8,6 +8,8 @@ from selenium.webdriver.common.by import By
 
 from multiprocessing import Queue
 
+import os , signal , sys 
+
 def create_selenium_driver():
   chrome_options = webdriver.ChromeOptions() # Set up the headless browser for webdriver
   chrome_options.add_argument('--headless')  # Run Chrome in headless mode
@@ -69,3 +71,8 @@ def get_lnh_lastchapter(url):
     driver.get(url)
     driver.implicitly_wait(10)
     return driver.find_element(By.CSS_SELECTOR, ".header-stats > span:nth-child(1) > strong:nth-child(1)").text
+
+#closing parent process if window gets closed
+def sigterm_handler(si, frame):
+    print("UI process ended, terminating parent process")
+    sys.exit()

@@ -1,21 +1,39 @@
 import tkinter as tk
 from multiprocessing import Process, Pipe
-import sys
+import sys , signal, os 
 
 from utility_functions import *
 
+from PIL import Image , ImageTk
+
+#todo  if text == "Cover image downloaded and saved" : add_cover_img() -> display downloaded cover-img.png file
+
 def create_ui(pipe, proc_sem, queue,):
+
+    def reset():
+        run_button = tk.Button(main_frame, text="Download", font=("Helvetica", 14), fg=text_color, bg=background_color, command=start_download)
+        run_button.pack(pady=5)
+        elink.delete(0, tk.END)
+        s_chap_entry.delete(0, tk.END)
+        e_chap_entry.delete(0, tk.END)
+
 
     def update_debug(label):
         if(not queue.empty()):
-            label.configure(text=queue.get_nowait())
+            text = queue.get_nowait()
+            label.configure(text=text)
+            # if label says the download is completed put download button back
+            if text == "Download Completed" : reset()
+            #todo if text == "Cover image downloaded and saved" : add_cover_img()
 
+    
     # closing window handler function
     def on_closing():
         f.quit()  # Quit the Tkinter event loop
         f.destroy()  # Destroy the window (optional)
         print("Window close, exiting program")
         pipe.close()
+        os.kill(os.getppid() , signal.SIGTERM) # send sigterm to close parent process
         sys.exit()
 
     def start_download():
@@ -31,6 +49,7 @@ def create_ui(pipe, proc_sem, queue,):
         print(f"Sent user input: {userURL}, {first_chapter}, {last_chapter}, {removetxt}")
         pipe.send((userURL, first_chapter, last_chapter, removetxt))
         proc_sem.release()
+
 
     # Define black and white colors
     background_color = "#c5bcd6"  # White background
