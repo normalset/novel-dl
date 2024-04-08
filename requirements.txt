@@ -3,3 +3,4 @@ requests
 pypandoc
 selenium
 Pillow
+customtkinter

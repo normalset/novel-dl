@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 from utility_functions import *
-import ui
+import custom_ui as ui
 
 #? Global definitions
 cover_save_path = 'cover-image.png'
@@ -142,6 +142,7 @@ if __name__ == '__main__' :
     ui_process = Process(target=ui.create_ui , args=(ui_pipe, proc_sem, debug_msg_q, ))
     ui_process.start()
     while(1):
+        print("i got here")
         #wait for ui process to post sem
         proc_sem.acquire()
 
@@ -150,51 +151,55 @@ if __name__ == '__main__' :
         userURL, first_chapter, last_chapter, removeTXT = dl_pipe.recv()
         print(f"Recieved user input: {userURL}, {first_chapter}, {last_chapter}, {removeTXT}")
 
-        website = userURL.split('/')[2] #https: , "" , "website"
 
-        match website:
-            case "novelhi.com":
-                novel_hi_scraper(first_chapter, last_chapter)
-            case "www.lightnovelhub.org":
-                lightnovelhub_scraper(first_chapter, last_chapter)
-
-        # Specify the input and output formats
-        input_format = 'markdown'
-        output_format = 'epub'
-
-        # Read the content of the input file
-        with open(f'{bookname}.txt', 'r', encoding='utf-8') as f:
-            content = f.read()
-
-
-        # Convert the content using pypandoc and save it directly to the output file
-        pypandoc.convert_file(f'{bookname}.txt', output_format, format=input_format, outputfile=f'{bookname}.epub', extra_args=[
-                '--metadata', f'cover-image={cover_save_path}',
-                '--metadata', f'language=en',
-                '--metadata', f'title={bookname}',
-            ])
-
-        print("Compression into epub done!\n")  
-        debug_msg_q.put_nowait("Compression into epub done!")
-
-        #remove .txt file if user wants to remove .txt
-        if(removeTXT):
-            try:
-                os.remove(f'{bookname}.txt')
-                print(f"File '{bookname}.txt' has been successfully removed.")
-                debug_msg_q.put_nowait(f"File '{bookname}.txt' has been successfully removed.")
-            except FileNotFoundError:
-                print(f"File '{bookname}.txt' not found.")
-            except Exception as e:
-                print(f"An error occurred: {e}")
-
-        #remove coverImage file
         try:
-            os.remove('cover-image.png')
-            debug_msg_q.put_nowait("File 'cover-image' has been successfully removed.")
-            print(f"File 'cover-image' has been successfully removed.")
-        except Exception as e:
-            debug_msg_q.put_nowait(f"Image not deleted: {e}")
-            print(f"Image not deleted: {e}")
+            website = userURL.split('/')[2] #https: , "" , "website"
+            match website:
+                case "novelhi.com":
+                    novel_hi_scraper(first_chapter, last_chapter)
+                case "www.lightnovelhub.org":
+                    lightnovelhub_scraper(first_chapter, last_chapter)
 
-        debug_msg_q.put_nowait("Download Completed")
+            # Specify the input and output formats
+            input_format = 'markdown'
+            output_format = 'epub'
+
+            # Read the content of the input file
+            with open(f'{bookname}.txt', 'r', encoding='utf-8') as f:
+                content = f.read()
+
+
+            # Convert the content using pypandoc and save it directly to the output file
+            pypandoc.convert_file(f'{bookname}.txt', output_format, format=input_format, outputfile=f'{bookname}.epub', extra_args=[
+                    '--metadata', f'cover-image={cover_save_path}',
+                    '--metadata', f'language=en',
+                    '--metadata', f'title={bookname}',
+                ])
+
+            print("Compression into epub done!\n")  
+            debug_msg_q.put_nowait("Compression into epub done!")
+
+            #remove .txt file if user wants to remove .txt
+            if(removeTXT):
+                try:
+                    os.remove(f'{bookname}.txt')
+                    print(f"File '{bookname}.txt' has been successfully removed.")
+                    debug_msg_q.put_nowait(f"File '{bookname}.txt' has been successfully removed.")
+                except FileNotFoundError:
+                    print(f"File '{bookname}.txt' not found.")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+
+            #remove coverImage file
+            try:
+                os.remove('cover-image.png')
+                debug_msg_q.put_nowait("File 'cover-image' has been successfully removed.")
+                print(f"File 'cover-image' has been successfully removed.")
+            except Exception as e:
+                debug_msg_q.put_nowait(f"Image not deleted: {e}")
+                print(f"Image not deleted: {e}")
+
+            debug_msg_q.put_nowait("Download Completed")
+        except:
+            debug_msg_q.put_nowait("Error: Data not correct or server Error. Try Again")
+

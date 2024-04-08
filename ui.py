@@ -6,12 +6,12 @@ from utility_functions import *
 
 from PIL import Image , ImageTk
 
+#! deprecated, using custom_ui now keeping, for future tests
 #todo  if text == "Cover image downloaded and saved" : add_cover_img() -> display downloaded cover-img.png file
 
 def create_ui(pipe, proc_sem, queue,):
 
     def reset():
-        run_button = tk.Button(main_frame, text="Download", font=("Helvetica", 14), fg=text_color, bg=background_color, command=start_download)
         run_button.pack(pady=5)
         elink.delete(0, tk.END)
         s_chap_entry.delete(0, tk.END)
@@ -38,7 +38,7 @@ def create_ui(pipe, proc_sem, queue,):
 
     def start_download():
         print("download Button pressed")
-        run_button.destroy()
+        run_button.pack_forget()
         userURL = elink.get()
         first_chapter = s_chap_entry.get()
         last_chapter = e_chap_entry.get()
