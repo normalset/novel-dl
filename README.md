@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
 ## Usage
 Run and follow the requests on the terminal 
 ```
-python3 ui_novel_di.py # recommended
+python3 ui_novel_dl.py # recommended
 
 python3 novel_dl.py    # for terminal run
 ```
