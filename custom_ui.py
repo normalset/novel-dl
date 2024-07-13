@@ -144,7 +144,7 @@ def create_ui(pipe, proc_sem, queue,):
   # Start a loop within the main event loop for updates
   def loop():
     update_debug(debug_text)
-    app.after(500, loop)  # Schedule next update
+    app.after(200, loop)  # Schedule next update
 
   loop()  # Call loop to start periodic updates
 

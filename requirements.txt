@@ -1,3 +1,4 @@
+fake_useragent
 beautifulsoup4
 requests
 pypandoc

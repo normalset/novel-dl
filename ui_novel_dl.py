@@ -1,4 +1,4 @@
-import os , signal , sys 
+import os , signal , sys , time
 from multiprocessing import Process, Pipe, Semaphore, Queue
 import requests
 import pypandoc
@@ -25,6 +25,10 @@ signal.signal(signal.SIGTERM , sigterm_handler)
 proc_sem = Semaphore(0)
 dl_pipe, ui_pipe = Pipe()
 
+#generate proxies for request functions
+proxy_list = []
+generate_proxies(proxy_list)
+
 #? functions for different websites
 #todo save functions in a separate file
 def novel_hi_scraper(fc, lc):  
@@ -46,15 +50,21 @@ def novel_hi_scraper(fc, lc):
     
     file = open(f"{bookname}.txt" , "a+" )
     
-    for chapterNumber in range(int(fc) , int(lc)+1): 
+    chapterNumber = int(fc)
+
+    while chapterNumber <= int(lc): 
         url = f"{userURL}/{chapterNumber}"
-        page = requests.get(url)
-        print("DEBUG" , page)
+        
+
+        page = get_request_page(url , proxy_list)
+        print("[DEBUG]" , page)
 
         #handle case where website fails
         if page.status_code!= 200:
             print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
-            break
+            chapterNumber -= 1 
+            time.sleep(1)
+            continue
 
         parser = BeautifulSoup(page.content, "html.parser")
 
@@ -75,6 +85,8 @@ def novel_hi_scraper(fc, lc):
         #!!! testing
         debug_msg_q.put_nowait(f"Chapter {chapterNumber} downloaded")
         sentID = 0
+        chapterNumber += 1 
+
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
     debug_msg_q.put_nowait(f"DONE downloading, starting compression into epub...")
 
@@ -101,38 +113,51 @@ def lightnovelhub_scraper(fc, lc):
     
     file = open(f"{bookname}.txt" , "a+" )
     
-    for chapterNumber in range(int(fc) , int(lc)+1): 
-        url = f"{userURL}/chapter-{chapterNumber}"
+    chapterNumber = int(fc)
+    while chapterNumber <= int(lc): 
+        try:
+            print("[DEBUG] chapterNumber :" , chapterNumber)
+            url = f"{userURL}/chapter-{chapterNumber}"
+            
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(url)
+
+            # Wait for some time to allow JavaScript to execute (adjust the time as needed)
+            driver.implicitly_wait(10)
+            page = driver.page_source
+            
+            #print("DEBUG" , page)
+
+            # handle case where website fails
+            # if page.status_code!= 200:
+            #     print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
+            #     chapterNumber -= 1 
+            #     time.sleep(1)
+            #     continue
+
+            parser = BeautifulSoup(page, "html.parser")
+
+            chapterText = "" 
+            chapterName = parser.find("span", {"class": "chapter-title"}).text
+            chapterText += "\n# " + chapterName + "\n"
+
+            container = parser.find("div", {"id": "chapter-container"})
+            chapterTextArray = container.find_all("p")
+            for line in chapterTextArray:
+                chapterText += "\n" + line.text + "\n"
+
+            driver.quit()
+
+            file.write(chapterText)
+            debug_msg_q.put_nowait(f"Chapter {chapterNumber} downloaded")
+
+            chapterNumber += 1 
+        except Exception as error:
+            print("[ERR] got an error, redownloading chapter n: ",chapterNumber , error)
+            chapterNumber -= 1 
+            time.sleep(1)
+            continue
         
-        driver = webdriver.Chrome(options=chrome_options)
-        driver.get(url)
-
-        # Wait for some time to allow JavaScript to execute (adjust the time as needed)
-        driver.implicitly_wait(10)
-        page = driver.page_source
-        
-        #print("DEBUG" , page)
-
-        # handle case where website fails
-        # if page.status_code!= 200:
-        #     print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
-        #     break
-
-        parser = BeautifulSoup(page, "html.parser")
-
-        chapterText = "" 
-        chapterName = parser.find("span", {"class": "chapter-title"}).text
-        chapterText += "\n# " + chapterName + "\n"
-
-        container = parser.find("div", {"id": "chapter-container"})
-        chapterTextArray = container.find_all("p")
-        for line in chapterTextArray:
-            chapterText += "\n" + line.text + "\n"
-
-        driver.quit()
-
-        file.write(chapterText)
-        debug_msg_q.put_nowait(f"Chapter {chapterNumber} downloaded")
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
     debug_msg_q.put_nowait(f"DONE downloading, starting compression into epub...")
 
