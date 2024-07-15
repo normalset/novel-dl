@@ -1,6 +1,6 @@
 import requests
 import pypandoc
-pypandoc.download_pandoc()
+# pypandoc.download_pandoc()
 import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -33,7 +33,8 @@ def novel_hi_scraper(fc, lc):
     
     file = open(f"{bookname}.txt" , "a+" )
     
-    for chapterNumber in range(int(fc) , int(lc)+1): 
+    chapterNumber = int(fc)
+    while chapterNumber <= int(lc): 
         url = f"{userURL}/{chapterNumber}"
         page = requests.get(url)
         print("DEBUG" , page)
@@ -41,7 +42,9 @@ def novel_hi_scraper(fc, lc):
         #handle case where website fails
         if page.status_code!= 200:
             print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
-            break
+            chapterNumber -= 1 
+            time.sleep(1)
+            continue
 
         parser = BeautifulSoup(page.content, "html.parser")
 
@@ -60,6 +63,8 @@ def novel_hi_scraper(fc, lc):
         file.write(chapterText)
         print(f"CHAPTER {chapterNumber} DONE\n")
         sentID = 0
+        chapterNumber += 1
+
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
 
 def lightnovelhub_scraper(fc, lc): 
@@ -84,38 +89,42 @@ def lightnovelhub_scraper(fc, lc):
     
     file = open(f"{bookname}.txt" , "a+" )
     
-    for chapterNumber in range(int(fc) , int(lc)+1): 
-        url = f"{userURL}/chapter-{chapterNumber}"
-        
-        driver = webdriver.Chrome(options=chrome_options)
-        driver.get(url)
+    chapterNumber = int(fc)
+    while chapterNumber <= int(lc): 
+        try: 
+            url = f"{userURL}/chapter-{chapterNumber}"
+            
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(url)
 
-        # Wait for some time to allow JavaScript to execute  fix by using webdriverWait(driver , n).until( condition )
-        driver.implicitly_wait(10)
-        page = driver.page_source
-        
-        #print("DEBUG" , page)
+            # Wait for some time to allow JavaScript to execute  fix by using webdriverWait(driver , n).until( condition )
+            driver.implicitly_wait(10)
+            page = driver.page_source
+            
+            #print("DEBUG" , page)
 
-        # handle case where website fails
-        # if page.status_code!= 200:
-        #     print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
-        #     break
+            parser = BeautifulSoup(page, "html.parser")
 
-        parser = BeautifulSoup(page, "html.parser")
+            chapterText = "" 
+            chapterName = parser.find("span", {"class": "chapter-title"}).text
+            chapterText += "\n# " + chapterName + "\n"
 
-        chapterText = "" 
-        chapterName = parser.find("span", {"class": "chapter-title"}).text
-        chapterText += "\n# " + chapterName + "\n"
+            container = parser.find("div", {"id": "chapter-container"})
+            chapterTextArray = container.find_all("p")
+            for line in chapterTextArray:
+                chapterText += "\n" + line.text + "\n"
 
-        container = parser.find("div", {"id": "chapter-container"})
-        chapterTextArray = container.find_all("p")
-        for line in chapterTextArray:
-            chapterText += "\n" + line.text + "\n"
+            driver.quit()
 
-        driver.quit()
+            file.write(chapterText)
+            print(f"CHAPTER {chapterNumber} DONE\n")
+            chapterNumber += 1
+        except Exception as error:
+            print("[ERR] got an error, redownloading chapter n: ",chapterNumber , error)
+            chapterNumber -= 1 
+            time.sleep(1)
+            continue
 
-        file.write(chapterText)
-        print(f"CHAPTER {chapterNumber} DONE\n")
     print("\n--------------------------------\nDONE downloading, starting compression into epub...\n----------------------------\n")
 
 

@@ -128,13 +128,6 @@ def lightnovelhub_scraper(fc, lc):
             
             #print("DEBUG" , page)
 
-            # handle case where website fails
-            # if page.status_code!= 200:
-            #     print(f"Website failed to load, last chapter correctly downloadead is {chapterNumber-1}")
-            #     chapterNumber -= 1 
-            #     time.sleep(1)
-            #     continue
-
             parser = BeautifulSoup(page, "html.parser")
 
             chapterText = "" 
